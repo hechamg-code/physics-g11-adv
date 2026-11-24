@@ -964,14 +964,12 @@
     <span class="brand-author">إعداد : أ. هشام غنوم</span>
   </div>
   <nav class="nav-tabs">
-    <span class="visitor-pill" title="إجمالي عدد زيارات المنصة">👁️ الزيارات: <strong id="live-visit-count">...</strong></span>
     <span class="student-pill" onclick="openStudentGateModal()" title="انقر لتغيير بيانات الطالب">👤 <span id="nav-student-label">تسجيل دخول الطالب</span></span>
     <button class="tab-btn active" id="tab-slides" onclick="switchMode('slides')">🎬 عرض الشرائح (44)</button>
     <button class="tab-btn gold-btn" id="tab-holograms" onclick="switchMode('holograms')">🔮 مختبر الهولوغرام 3D</button>
     <button class="tab-btn" id="tab-index" onclick="switchMode('index')">📑 الفهرس</button>
     <button class="tab-btn" id="btn-pres-mode" onclick="togglePresentationRevealMode()">✨ الشرح المتدرج: مفعل</button>
     <button class="tab-btn gold-btn" id="btn-cert-nav" onclick="openCertModal()" style="border-color:#fde047;box-shadow:0 0 12px rgba(245,158,11,0.35);">🏅 شهادة الإنجاز (5 مستويات)</button>
-    <button class="tab-btn" onclick="openTeacherModal()" style="border-color:var(--emerald);color:#6ee7b7;" title="لوحة تحكم المعلم وتتبع الطلاب وربط Google Sheets">📊 سجل الزوار (للمعلم)</button>
   </nav>
 </header>
 
@@ -1080,10 +1078,6 @@
       <button class="nav-btn" onclick="submitStudentGate()" style="width:100%;justify-content:center;padding:12px;font-size:1.05rem;background:linear-gradient(135deg,#0284c7,#10b981);border-color:#6ee7b7;margin-top:4px;">
         ✅ تسجيل الدخول وبدء استعراض الهيكل
       </button>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:10px;border-top:1px solid rgba(56,189,248,0.2);font-size:0.8rem;">
-        <button class="holo-btn" onclick="openTeacherModal();closeStudentGateModal();" style="color:var(--gold);border-color:var(--gold);">👨‍🏫 دخول المعلم (أ. هشام غنوم)</button>
-        <span style="color:var(--text-muted);">👁️ إجمالي الزيارات: <strong id="gate-visit-count" style="color:var(--emerald);">...</strong></span>
-      </div>
     </div>
   </div>
 </div>
@@ -2322,6 +2316,18 @@ function submitStudentGate() {
   const name = (document.getElementById('gateStudentName').value || '').trim();
   const cls = (document.getElementById('gateStudentClass').value || '').trim();
   const errEl = document.getElementById('gate-err-msg');
+  // Secret Teacher Shortcut: typing 2026 in the student name field opens the Teacher Dashboard directly!
+  if (name === TEACHER_PIN_CODE) {
+    if (errEl) errEl.style.display = 'none';
+    document.getElementById('gateStudentName').value = '';
+    closeStudentGateModal();
+    teacherUnlocked = true;
+    openTeacherModal();
+    document.getElementById('teacher-pin-box').style.display = 'none';
+    document.getElementById('teacher-dashboard-body').style.display = 'block';
+    renderTeacherLogsTable();
+    return;
+  }
   if (name.length < 3 || cls.length < 1) {
     if (errEl) errEl.style.display = 'block';
     return;
@@ -2334,6 +2340,34 @@ function submitStudentGate() {
   recordStudentActivity('تسجيل دخول جديد للمنصة', name, cls);
   _showSecurityToast(`🎉 مرحباً بك يا ${name} — تم تسجيل دخولك بنجاح!`);
 }
+
+// Secret Teacher Triggers (Invisible to Students):
+// 1. Triple-click on "إعداد : أ. هشام غنوم" in the top header
+// 2. Keyboard shortcut: Alt + T or Ctrl + Shift + M
+(function _initSecretTeacherTriggers() {
+  const authBadge = document.querySelector('.brand-author');
+  let clickCount = 0;
+  let clickTimer = null;
+  if (authBadge) {
+    authBadge.addEventListener('click', () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      if (clickCount >= 3) {
+        clickCount = 0;
+        openTeacherModal();
+      } else {
+        clickTimer = setTimeout(() => { clickCount = 0; }, 700);
+      }
+    });
+  }
+  window.addEventListener('keydown', (e) => {
+    const k = (e.key || '').toLowerCase();
+    if ((e.altKey && k === 't') || (e.ctrlKey && e.shiftKey && k === 'm')) {
+      e.preventDefault();
+      openTeacherModal();
+    }
+  });
+})();
 
 // Teacher Dashboard Functions
 function openTeacherModal() {
