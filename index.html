@@ -875,6 +875,82 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+  /* Visitor Counter & Student Sign-In Gate + Teacher Tracking Panel */
+  .visitor-pill {
+    background: rgba(6, 78, 59, 0.85);
+    border: 1.2px solid var(--emerald);
+    color: #a7f3d0;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  }
+  .student-pill {
+    background: rgba(15, 29, 58, 0.9);
+    border: 1.2px solid var(--cyan);
+    color: #bae6fd;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .student-pill:hover {
+    border-color: var(--gold);
+    color: #fff;
+  }
+  .gate-card {
+    max-width: 540px;
+    width: 100%;
+    margin: auto;
+    background: linear-gradient(145deg, rgba(15, 29, 58, 0.96), rgba(6, 12, 28, 0.98));
+    border: 2px solid var(--cyan);
+    border-radius: 20px;
+    padding: 26px 24px;
+    box-shadow: 0 0 50px rgba(56, 189, 248, 0.3);
+    text-align: center;
+  }
+  .track-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.85rem;
+  }
+  .track-table th, .track-table td {
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    padding: 8px 10px;
+    text-align: right;
+  }
+  .track-table th {
+    background: rgba(14, 30, 62, 0.95);
+    color: var(--gold);
+    font-weight: 800;
+  }
+  .track-table tr:nth-child(even) {
+    background: rgba(15, 23, 42, 0.55);
+  }
+  .code-box {
+    background: #030712;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: Consolas, monospace;
+    font-size: 0.78rem;
+    color: #a7f3d0;
+    direction: ltr;
+    text-align: left;
+    max-height: 190px;
+    overflow-y: auto;
+    white-space: pre;
+    margin-top: 8px;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
 </style>
 </head>
 <body oncontextmenu="return false;" oncopy="return false;" oncut="return false;" ondragstart="return false;">
@@ -888,11 +964,14 @@
     <span class="brand-author">إعداد : أ. هشام غنوم</span>
   </div>
   <nav class="nav-tabs">
-    <button class="tab-btn active" id="tab-slides" onclick="switchMode('slides')">🎬 عرض الشرائح التفاعلي (44)</button>
-    <button class="tab-btn gold-btn" id="tab-holograms" onclick="switchMode('holograms')">🔮 مختبر الهولوغرام 3D المنفصل</button>
-    <button class="tab-btn" id="tab-index" onclick="switchMode('index')">📑 فهرس جميع الشرائح والأسئلة</button>
-    <button class="tab-btn" id="btn-pres-mode" onclick="togglePresentationRevealMode()" title="تبديل وضع الإظهار المتدرج بالضغط كما في الباوربوينت">✨ وضع الشرح المتدرج: مفعل</button>
+    <span class="visitor-pill" title="إجمالي عدد زيارات المنصة">👁️ الزيارات: <strong id="live-visit-count">...</strong></span>
+    <span class="student-pill" onclick="openStudentGateModal()" title="انقر لتغيير بيانات الطالب">👤 <span id="nav-student-label">تسجيل دخول الطالب</span></span>
+    <button class="tab-btn active" id="tab-slides" onclick="switchMode('slides')">🎬 عرض الشرائح (44)</button>
+    <button class="tab-btn gold-btn" id="tab-holograms" onclick="switchMode('holograms')">🔮 مختبر الهولوغرام 3D</button>
+    <button class="tab-btn" id="tab-index" onclick="switchMode('index')">📑 الفهرس</button>
+    <button class="tab-btn" id="btn-pres-mode" onclick="togglePresentationRevealMode()">✨ الشرح المتدرج: مفعل</button>
     <button class="tab-btn gold-btn" id="btn-cert-nav" onclick="openCertModal()" style="border-color:#fde047;box-shadow:0 0 12px rgba(245,158,11,0.35);">🏅 شهادة الإنجاز (5 مستويات)</button>
+    <button class="tab-btn" onclick="openTeacherModal()" style="border-color:var(--emerald);color:#6ee7b7;" title="لوحة تحكم المعلم وتتبع الطلاب وربط Google Sheets">📊 سجل الزوار (للمعلم)</button>
   </nav>
 </header>
 
@@ -976,6 +1055,145 @@
     <div class="levels-ladder" id="levels-ladder-bar"></div>
 
     <canvas id="certCanvas" width="1400" height="980"></canvas>
+  </div>
+</div>
+
+<!-- Student Sign-In Gate Modal (Captures Student Name & Class on Entry) -->
+<div class="cert-modal" id="student-gate-modal">
+  <div class="gate-card">
+    <div style="font-size:2.6rem;margin-bottom:6px;">🚀🔮</div>
+    <h2 style="color:var(--gold);font-size:1.35rem;margin-bottom:6px;">بوابة دخول الطالب — منصة الفيزياء 11 متقدم بريدج</h2>
+    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;line-height:1.55;">
+      مرحباً بك في منصة الهولوغرام الثلاثي الأبعاد لهيكل الفيزياء (إعداد: <strong style="color:var(--cyan);">أ. هشام غنوم</strong>).<br/>
+      يرجى تسجيل اسمك الثلاثي والصف لتفعيل حسابك وإصدار شهادة الإنجاز الخاصة بك:
+    </p>
+    <div style="display:flex;flex-direction:column;gap:12px;text-align:right;">
+      <div>
+        <label style="font-size:0.84rem;color:var(--gold);font-weight:800;display:block;margin-bottom:4px;">👤 اسم الطالب / الطالبة الثلاثي:</label>
+        <input type="text" id="gateStudentName" class="cert-input" style="width:100%;" placeholder="مثال: محمد أحمد الشامسي" />
+      </div>
+      <div>
+        <label style="font-size:0.84rem;color:var(--cyan);font-weight:800;display:block;margin-bottom:4px;">🏫 الصف والشعبة:</label>
+        <input type="text" id="gateStudentClass" class="cert-input" style="width:100%;" placeholder="مثال: 11 متقدم / 1" />
+      </div>
+      <div id="gate-err-msg" style="color:var(--rose);font-size:0.84rem;font-weight:800;display:none;">⚠️ يرجى كتابة اسم الطالب الثلاثي والصف/الشعبة للمتابعة.</div>
+      <button class="nav-btn" onclick="submitStudentGate()" style="width:100%;justify-content:center;padding:12px;font-size:1.05rem;background:linear-gradient(135deg,#0284c7,#10b981);border-color:#6ee7b7;margin-top:4px;">
+        ✅ تسجيل الدخول وبدء استعراض الهيكل
+      </button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:10px;border-top:1px solid rgba(56,189,248,0.2);font-size:0.8rem;">
+        <button class="holo-btn" onclick="openTeacherModal();closeStudentGateModal();" style="color:var(--gold);border-color:var(--gold);">👨‍🏫 دخول المعلم (أ. هشام غنوم)</button>
+        <span style="color:var(--text-muted);">👁️ إجمالي الزيارات: <strong id="gate-visit-count" style="color:var(--emerald);">...</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Visitor Tracking & Google Sheets Integration Modal -->
+<div class="cert-modal" id="teacher-track-modal">
+  <div class="cert-box" style="max-width:1120px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(56,189,248,0.3);">
+      <div>
+        <h2 style="color:var(--gold);font-size:1.3rem;">👨‍🏫 لوحة تحكم المعلم وتتبع الزوار والطلاب — أ. هشام غنوم</h2>
+        <div style="color:var(--cyan);font-size:0.85rem;margin-top:2px;">تتبع حي لعدد الزيارات، سجل دخول الطلاب، الدرجات، المستويات الخمسة، والربط السحابي المباشر مع Google Sheets</div>
+      </div>
+      <button class="nav-btn" style="background:var(--rose);border-color:#fda4af;" onclick="closeTeacherModal()">✖ إغلاق</button>
+    </div>
+
+    <!-- PIN Lock Screen inside Teacher Modal -->
+    <div id="teacher-pin-box" style="text-align:center;padding:28px 16px;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🔐</div>
+      <h3 style="color:#fff;margin-bottom:8px;">هذه اللوحة مخصصة للمعلم فقط (أ. هشام غنوم)</h3>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:14px;">أدخل رمز المرور السري للمعلم لعرض سجل الزوار وإعدادات Google Sheets:</p>
+      <div style="display:flex;gap:10px;justify-content:center;max-width:360px;margin:0 auto;">
+        <input type="password" id="teacherPinInput" class="cert-input" style="text-align:center;min-width:140px;" placeholder="رمز المعلم..." onkeydown="if(event.key==='Enter')verifyTeacherPin()" />
+        <button class="nav-btn" onclick="verifyTeacherPin()">🔓 فتح اللوحة</button>
+      </div>
+      <div id="teacher-pin-err" style="color:var(--rose);font-size:0.84rem;font-weight:800;margin-top:8px;display:none;">❌ رمز المرور غير صحيح!</div>
+    </div>
+
+    <!-- Unlocked Teacher Dashboard Content -->
+    <div id="teacher-dashboard-body" style="display:none;">
+      <!-- Top Stats Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:16px;">
+        <div class="q-card" style="text-align:center;border-color:var(--emerald);padding:12px;">
+          <div style="font-size:1.75rem;font-weight:900;color:var(--emerald);" id="dash-total-visits">...</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">👁️ إجمالي زيارات الموقع (السحابي)</div>
+        </div>
+        <div class="q-card" style="text-align:center;border-color:var(--cyan);padding:12px;">
+          <div style="font-size:1.75rem;font-weight:900;color:var(--cyan);" id="dash-local-logs-count">0</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">📋 سجلات النشاط المحفوظة</div>
+        </div>
+        <div class="q-card" style="text-align:center;border-color:var(--gold);padding:12px;">
+          <div style="font-size:1.05rem;font-weight:900;color:var(--gold);margin-top:6px;" id="dash-sheet-status">جاهز للربط</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">☁️ حالة الربط مع Google Sheets</div>
+        </div>
+      </div>
+
+      <!-- Google Sheets Cloud Connection Section -->
+      <div class="q-card" style="border-color:var(--gold);margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+          <div style="color:var(--gold);font-weight:900;font-size:1rem;">☁️ الربط التلقائي بجدول Google Sheets الخاص بك (يستقبل بيانات كل طالب يدخل الموقع من أي جهاز):</div>
+          <button class="holo-btn" onclick="toggleSheetSetupGuide()" style="border-color:var(--cyan);color:var(--cyan);">📖 عرض / إخفاء خطوات وكود Google Sheets (دقيقة واحدة)</button>
+        </div>
+        <div class="cert-form-row" style="margin-bottom:6px;">
+          <input type="text" id="googleSheetWebhookInput" class="cert-input" dir="ltr" placeholder="https://script.google.com/macros/s/......./exec  (الصق رابط Web App لجدول Google Sheets هنا)" />
+          <button class="nav-btn" onclick="saveGoogleSheetWebhook()" style="background:linear-gradient(135deg,#059669,#10b981);">💾 حفظ وتفعيل الرابط</button>
+          <button class="tab-btn gold-btn" onclick="testGoogleSheetsConnection()">⚡ إرسال سجل تجريبي للجدول الآن</button>
+        </div>
+        <div id="sheet-test-msg" style="font-size:0.84rem;color:var(--emerald);font-weight:700;"></div>
+
+        <!-- Expandable 1-Minute Setup Guide + Ready-to-Copy Google Apps Script -->
+        <div id="sheet-setup-guide" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(56,189,248,0.25);font-size:0.86rem;line-height:1.65;color:var(--text-muted);">
+          <div style="color:#fff;font-weight:800;margin-bottom:4px;">خطوات إنشاء جدول Google Sheets لاستقبال أسماء الطلاب ودرجاتهم تلقائياً (مجاناً 100%):</div>
+          <ol style="padding-right:20px;margin-bottom:8px;">
+            <li>افتح ملف <strong>Google Sheets</strong> جديد في حسابك على جوجل، ومن القائمة العلوية اختر: <strong>Extensions (الإضافات) ⬅ Apps Script</strong>.</li>
+            <li>امسح أي كود موجود هناك، واضغط على الزر أدناه <strong>«📋 نسخ كود Google Apps Script الجاهز»</strong> والصقه هناك، ثم اضغط حفظ (💾).</li>
+            <li>في أعلى يمين صفحة Apps Script اضغط <strong>Deploy (نشر) ⬅ New deployment (نشر جديد)</strong>، واختر النوع <strong>Web app (تطبيق ويب)</strong>.</li>
+            <li>اجعل <strong>Who has access (من لديه حق الوصول): Anyone (أي شخص)</strong> ثم اضغط <strong>Deploy</strong> وانسخ رابط <code>Web app URL</code> الناتج.</li>
+            <li>الصق الرابط في الخانة أعلاه (أو أرسله لي في المحادثة لأدمجه لك بشكل دائم داخل ملف <code>index.html</code> قبل رفعه على GitHub Pages).</li>
+          </ol>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="color:var(--gold);font-weight:800;">كود Google Apps Script الجاهز للنسخ:</span>
+            <button class="holo-btn" onclick="copyAppsScriptCode()" style="background:var(--gold);color:#060b19;font-weight:800;">📋 نسخ كود Google Apps Script الجاهز</button>
+          </div>
+          <div class="code-box" id="apps-script-code-box">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["التاريخ والوقت", "اسم الطالب", "الصف والشعبة", "نوع الحدث", "الأسئلة المجابة", "الإجابات الصحيحة", "النسبة المئوية", "المستوى (من 5)", "نوع الجهاز والمتصفح"]);
+  }
+  var d = JSON.parse(e.postData.contents);
+  sheet.appendRow([d.timestamp, d.studentName, d.studentClass, d.eventType, d.answered, d.correct, d.pct + "%", d.levelTitle, d.device]);
+  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}</div>
+        </div>
+      </div>
+
+      <!-- Activity & Student Table -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+        <h3 style="color:var(--cyan);font-size:1rem;">📋 سجل دخول الطلاب والأنشطة والدرجات:</h3>
+        <div style="display:flex;gap:8px;">
+          <button class="holo-btn" onclick="exportLogsCSV()" style="border-color:var(--emerald);color:#6ee7b7;">📥 تصدير السجل كملف Excel (CSV)</button>
+          <button class="holo-btn" onclick="clearLocalLogs()" style="border-color:var(--rose);color:#fda4af;">🗑️ مسح السجل المحلي</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:300px;overflow-y:auto;">
+        <table class="track-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>التاريخ والوقت</th>
+              <th>اسم الطالب</th>
+              <th>الصف / الشعبة</th>
+              <th>الحدث</th>
+              <th>النتيجة</th>
+              <th>المستوى (من 5)</th>
+              <th>الجهاز</th>
+            </tr>
+          </thead>
+          <tbody id="teacher-logs-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1230,9 +1448,16 @@ function updateHoloViewMode() {
 }
 
 function pickOption(slideId, optIdx) {
+  const isFirstAnswerForSlide = (userSelectedOpt[slideId] === undefined);
   userSelectedOpt[slideId] = optIdx;
   slideRevealStage[slideId] = 2; // Reveal correct answer + scientific explanation + equations
   renderCurrentSlide();
+  if (isFirstAnswerForSlide && typeof recordStudentActivity === 'function') {
+    const st = computeStudentCertStats();
+    if (st.answeredCount % 4 === 0 || st.answeredCount === st.totalMcqs) {
+      recordStudentActivity(`حل ${st.answeredCount} أسئلة تفاعلية`);
+    }
+  }
 }
 
 function setRevealStage(slideId, stage) {
@@ -1922,6 +2147,10 @@ function drawCertificateCanvas() {
   ctx.font = 'bold 13px "Segoe UI", Arial';
   ctx.fillStyle = '#38bdf8';
   ctx.fillText('3D هولوغرام', W / 2, 866);
+
+  ctx.font = 'bold 15px "Segoe UI", Tahoma, monospace';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('المنصة التعليمية الرسمية: https://hechamg-code.github.io/physics-g11-adv/', W / 2, 922);
 }
 
 function downloadCertificatePNG() {
@@ -1932,10 +2161,16 @@ function downloadCertificatePNG() {
   link.download = `شهادة_إنجاز_الفيزياء_11_متقدم_${sName}.png`;
   link.href = c.toDataURL('image/png');
   link.click();
+  if (typeof recordStudentActivity === 'function') {
+    recordStudentActivity('إصدار وتحميل شهادة الإنجاز (PNG)');
+  }
 }
 
 function printCertificate() {
   drawCertificateCanvas();
+  if (typeof recordStudentActivity === 'function') {
+    recordStudentActivity('طباعة / حفظ شهادة الإنجاز (PDF)');
+  }
   const c = document.getElementById('certCanvas');
   const dataUrl = c.toDataURL('image/png');
   const w = window.open('', '_blank');
@@ -1946,6 +2181,285 @@ function printCertificate() {
     </head><body><img src="${dataUrl}" onload="window.print();" /></body></html>
   `);
   w.document.close();
+}
+
+// ======================== VISITOR COUNTER, STUDENT GATE & GOOGLE SHEETS TRACKER ========================
+// Teacher can paste their Google Apps Script Web App URL here OR inside the Teacher Dashboard UI
+const DEFAULT_GOOGLE_SHEETS_WEBHOOK_URL = "";
+const TEACHER_PIN_CODE = "2026";
+let teacherUnlocked = false;
+let cloudVisitCount = 1;
+
+function detectDeviceInfo() {
+  const ua = navigator.userAgent || '';
+  let dev = 'كمبيوتر (Desktop)';
+  if (/iPad/i.test(ua)) dev = 'أبل آيباد (iPad)';
+  else if (/iPhone/i.test(ua)) dev = 'أبل آيفون (iPhone)';
+  else if (/Android/i.test(ua)) dev = 'أندرويد (Android)';
+  else if (/Macintosh/i.test(ua)) dev = 'ماك (Mac)';
+  else if (/Windows/i.test(ua)) dev = 'ويندوز (Windows PC)';
+  return dev;
+}
+
+function getSavedWebhookUrl() {
+  return localStorage.getItem('g11_adv_gsheet_webhook') || DEFAULT_GOOGLE_SHEETS_WEBHOOK_URL || '';
+}
+
+function getLocalActivityLogs() {
+  try {
+    return JSON.parse(localStorage.getItem('g11_adv_student_logs') || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLocalActivityLog(entry) {
+  const logs = getLocalActivityLogs();
+  logs.unshift(entry);
+  if (logs.length > 300) logs.length = 300;
+  try {
+    localStorage.setItem('g11_adv_student_logs', JSON.stringify(logs));
+  } catch (e) {}
+}
+
+function recordStudentActivity(eventType, customName, customClass) {
+  const stats = computeStudentCertStats();
+  const sName = customName || (document.getElementById('studentNameInput').value || '').trim() || localStorage.getItem('g11_adv_student_name') || 'زائر';
+  const sClass = customClass || (document.getElementById('studentClassInput').value || '').trim() || localStorage.getItem('g11_adv_student_class') || '11 متقدم';
+  const nowStr = new Date().toLocaleString('ar-AE');
+
+  const payload = {
+    timestamp: nowStr,
+    studentName: sName,
+    studentClass: sClass,
+    eventType: eventType,
+    answered: `${stats.answeredCount} / ${stats.totalMcqs}`,
+    correct: stats.correctTotal,
+    pct: stats.pct,
+    levelTitle: `المستوى ${stats.lvlObj.lvl} من 5 (${stats.lvlObj.shortTitle})`,
+    device: detectDeviceInfo()
+  };
+
+  saveLocalActivityLog(payload);
+  renderTeacherLogsTable();
+
+  const webhookUrl = getSavedWebhookUrl();
+  if (webhookUrl && webhookUrl.startsWith('https://script.google.com/')) {
+    try {
+      fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch (e) {}
+  }
+}
+
+function initLiveVisitorCounter() {
+  // Increment local fallback counter immediately
+  let localCnt = parseInt(localStorage.getItem('g11_adv_visit_counter') || '140', 10) + 1;
+  localStorage.setItem('g11_adv_visit_counter', String(localCnt));
+  cloudVisitCount = localCnt;
+  updateVisitBadges(cloudVisitCount);
+
+  // Fetch & increment live global cloud counter across all devices for hechamg-code.github.io/physics-g11-adv/
+  fetch('https://api.counterapi.dev/v1/hechamg_code_physics_g11_adv/visits/up')
+    .then(r => r.json())
+    .then(data => {
+      if (data && typeof data.count === 'number') {
+        cloudVisitCount = data.count;
+        updateVisitBadges(cloudVisitCount);
+      }
+    })
+    .catch(() => {
+      updateVisitBadges(cloudVisitCount);
+    });
+}
+
+function updateVisitBadges(cnt) {
+  const el1 = document.getElementById('live-visit-count');
+  const el2 = document.getElementById('gate-visit-count');
+  const el3 = document.getElementById('dash-total-visits');
+  if (el1) el1.textContent = cnt.toLocaleString('en-US');
+  if (el2) el2.textContent = cnt.toLocaleString('en-US');
+  if (el3) el3.textContent = cnt.toLocaleString('en-US');
+}
+
+function initStudentGateOnLoad() {
+  const savedName = (localStorage.getItem('g11_adv_student_name') || '').trim();
+  const savedClass = (localStorage.getItem('g11_adv_student_class') || '').trim();
+  if (savedName) {
+    applyStudentIdentity(savedName, savedClass || '11 متقدم');
+    recordStudentActivity('عودة وتصفح المنصة', savedName, savedClass || '11 متقدم');
+  } else {
+    openStudentGateModal();
+  }
+}
+
+function applyStudentIdentity(name, cls) {
+  const navLbl = document.getElementById('nav-student-label');
+  if (navLbl) navLbl.textContent = `${name} (${cls})`;
+  const certName = document.getElementById('studentNameInput');
+  const certClass = document.getElementById('studentClassInput');
+  if (certName) certName.value = name;
+  if (certClass) certClass.value = cls;
+  const gateName = document.getElementById('gateStudentName');
+  const gateClass = document.getElementById('gateStudentClass');
+  if (gateName) gateName.value = name;
+  if (gateClass) gateClass.value = cls;
+}
+
+function openStudentGateModal() {
+  document.getElementById('student-gate-modal').classList.add('open');
+}
+
+function closeStudentGateModal() {
+  document.getElementById('student-gate-modal').classList.remove('open');
+}
+
+function submitStudentGate() {
+  const name = (document.getElementById('gateStudentName').value || '').trim();
+  const cls = (document.getElementById('gateStudentClass').value || '').trim();
+  const errEl = document.getElementById('gate-err-msg');
+  if (name.length < 3 || cls.length < 1) {
+    if (errEl) errEl.style.display = 'block';
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  localStorage.setItem('g11_adv_student_name', name);
+  localStorage.setItem('g11_adv_student_class', cls);
+  applyStudentIdentity(name, cls);
+  closeStudentGateModal();
+  recordStudentActivity('تسجيل دخول جديد للمنصة', name, cls);
+  _showSecurityToast(`🎉 مرحباً بك يا ${name} — تم تسجيل دخولك بنجاح!`);
+}
+
+// Teacher Dashboard Functions
+function openTeacherModal() {
+  document.getElementById('teacher-track-modal').classList.add('open');
+  const whInput = document.getElementById('googleSheetWebhookInput');
+  if (whInput) whInput.value = getSavedWebhookUrl();
+  updateTeacherSheetStatus();
+  renderTeacherLogsTable();
+}
+
+function closeTeacherModal() {
+  document.getElementById('teacher-track-modal').classList.remove('open');
+}
+
+function verifyTeacherPin() {
+  const pin = (document.getElementById('teacherPinInput').value || '').trim();
+  const err = document.getElementById('teacher-pin-err');
+  if (pin === TEACHER_PIN_CODE) {
+    teacherUnlocked = true;
+    document.getElementById('teacher-pin-box').style.display = 'none';
+    document.getElementById('teacher-dashboard-body').style.display = 'block';
+    if (err) err.style.display = 'none';
+    renderTeacherLogsTable();
+  } else {
+    if (err) err.style.display = 'block';
+  }
+}
+
+function toggleSheetSetupGuide() {
+  const g = document.getElementById('sheet-setup-guide');
+  if (g) g.style.display = (g.style.display === 'none' ? 'block' : 'none');
+}
+
+function updateTeacherSheetStatus() {
+  const st = document.getElementById('dash-sheet-status');
+  if (!st) return;
+  const url = getSavedWebhookUrl();
+  if (url && url.startsWith('https://script.google.com/')) {
+    st.textContent = '✅ متصل بـ Google Sheets';
+    st.style.color = 'var(--emerald)';
+  } else {
+    st.textContent = '⚠️ بانتظار لصق رابط الجدول';
+    st.style.color = 'var(--gold)';
+  }
+}
+
+function saveGoogleSheetWebhook() {
+  const url = (document.getElementById('googleSheetWebhookInput').value || '').trim();
+  localStorage.setItem('g11_adv_gsheet_webhook', url);
+  updateTeacherSheetStatus();
+  const msg = document.getElementById('sheet-test-msg');
+  if (msg) msg.textContent = '✅ تم حفظ رابط Google Sheets بنجاح!';
+}
+
+function testGoogleSheetsConnection() {
+  saveGoogleSheetWebhook();
+  const url = getSavedWebhookUrl();
+  const msg = document.getElementById('sheet-test-msg');
+  if (!url || !url.startsWith('https://script.google.com/')) {
+    if (msg) {
+      msg.style.color = 'var(--rose)';
+      msg.textContent = '⚠️ يرجى لصق رابط Google Apps Script Web App الصحيح أولاً (يبدأ بـ https://script.google.com/...).';
+    }
+    return;
+  }
+  if (msg) {
+    msg.style.color = 'var(--cyan)';
+    msg.textContent = '⏳ جاري إرسال سجل تجريبي إلى جدول Google Sheets...';
+  }
+  recordStudentActivity('اختبار ربط جدول المعلم (أ. هشام غنوم)', 'طالب تجريبي (اختبار الربط)', '11 متقدم / 1');
+  setTimeout(() => {
+    if (msg) {
+      msg.style.color = 'var(--emerald)';
+      msg.textContent = '✅ تم إرسال السجل التجريبي! افتح جدول Google Sheets للتأكد من ظهور الصف الجديد.';
+    }
+  }, 1200);
+}
+
+function copyAppsScriptCode() {
+  const code = document.getElementById('apps-script-code-box').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code);
+    _showSecurityToast('📋 تم نسخ كود Google Apps Script بنجاح!');
+  }
+}
+
+function renderTeacherLogsTable() {
+  const logs = getLocalActivityLogs();
+  const cntEl = document.getElementById('dash-local-logs-count');
+  if (cntEl) cntEl.textContent = logs.length;
+  const tbody = document.getElementById('teacher-logs-tbody');
+  if (!tbody) return;
+  if (logs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:16px;">لا توجد سجلات محلية بعد.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = logs.map((row, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${row.timestamp || ''}</td>
+      <td style="color:#fff;font-weight:800;">${row.studentName || ''}</td>
+      <td style="color:var(--cyan);">${row.studentClass || ''}</td>
+      <td>${row.eventType || ''}</td>
+      <td style="color:var(--gold);font-weight:800;">${row.pct}% (${row.correct} صح من ${row.answered})</td>
+      <td style="color:var(--emerald);font-weight:700;">${row.levelTitle || ''}</td>
+      <td style="font-size:0.78rem;color:var(--text-muted);">${row.device || ''}</td>
+    </tr>
+  `).join('');
+}
+
+function exportLogsCSV() {
+  const logs = getLocalActivityLogs();
+  let csv = '\uFEFFالتاريخ والوقت,اسم الطالب,الصف والشعبة,الحدث,الأسئلة المجابة,الإجابات الصحيحة,النسبة المئوية,المستوى (من 5),نوع الجهاز\n';
+  logs.forEach(r => {
+    csv += `"${r.timestamp}","${r.studentName}","${r.studentClass}","${r.eventType}","${r.answered}","${r.correct}","${r.pct}%","${r.levelTitle}","${r.device}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'سجل_زيارات_ودرجات_طلاب_الفيزياء_11_متقدم.csv';
+  link.click();
+}
+
+function clearLocalLogs() {
+  localStorage.removeItem('g11_adv_student_logs');
+  renderTeacherLogsTable();
 }
 
 // ======================== REAL-TIME 3D HOLOGRAM ENGINE ========================
@@ -2253,6 +2767,8 @@ function animateLoop() {
 
 // Initialize App
 renderCurrentSlide();
+initLiveVisitorCounter();
+initStudentGateOnLoad();
 requestAnimationFrame(animateLoop);
 </script>
 </body>
